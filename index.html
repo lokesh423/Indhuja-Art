@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Gallery Manager | Indhuja Artistry</title>
+  <script src="gallery-data.js"></script>
+  <style>
+    :root {
+      --accent: #f16d59;
+      --accent-dark: #c94e3c;
+      --bg: #fff5e7;
+      --ink: #29252e;
+      --muted: #6e6873;
+      --line: #eadfd3;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      padding: 28px 5% 60px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Poppins", "Trebuchet MS", Arial, sans-serif;
+      line-height: 1.55;
+    }
+    main { max-width: 900px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-family: Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.5rem); }
+    h1 span { color: var(--accent-dark); }
+    h2 { margin: 34px 0 12px; font-family: Georgia, serif; font-size: 1.35rem; }
+    .lead { margin: 0 0 18px; color: var(--muted); }
+    .hint { margin: 8px 0 14px; color: var(--muted); font-size: .88rem; }
+
+    .card {
+      padding: 14px 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+    .card summary { cursor: pointer; font-weight: 700; }
+    .fields { display: grid; gap: 12px; margin-bottom: 14px; }
+    .fields label { display: grid; gap: 4px; font-size: .86rem; font-weight: 700; }
+    .fields label.check { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .fields input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .upload-to {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 14px 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+    .upload-to label { font-weight: 700; }
+    .upload-to select { font-size: 1rem; font-weight: 600; }
+    .upload-to .hint { margin: 0; }
+
+    .drop {
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      padding: 34px 18px;
+      border: 2px dashed var(--accent);
+      border-radius: 20px;
+      background: #fff;
+      text-align: center;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .drop.over { background: #ffe9e4; }
+    .drop strong { font-size: 1.05rem; }
+    .drop small { color: var(--muted); }
+    .drop input { display: none; }
+
+    .list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .row {
+      display: grid;
+      grid-template-columns: 72px 1fr 150px auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .row img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: var(--line);
+    }
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid #d9d0c7;
+      border-radius: 10px;
+      font: inherit;
+      background: #fffdfa;
+    }
+    .badge {
+      display: inline-block;
+      margin-bottom: 4px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: #ffe9e4;
+      color: var(--accent-dark);
+      font-size: .7rem;
+      font-weight: 700;
+    }
+    .badge.live { background: #e3f4ec; color: #1f8a5b; }
+    summary .badge { margin: 0 0 0 8px; }
+
+    button {
+      padding: 10px 16px;
+      border: 2px solid var(--accent);
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+    button.ghost { background: transparent; color: var(--ink); border-color: #d9d0c7; }
+    button.ghost:hover { background: #ffe9e4; border-color: var(--accent); }
+    button:disabled { opacity: .55; cursor: wait; }
+
+    .empty { color: var(--muted); font-size: .9rem; margin: 0; }
+    .actions { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .msg { margin: 8px 0 0; font-weight: 700; font-size: .92rem; }
+    .msg.error { color: #d64545; }
+    .msg.ok { color: #1f8a5b; }
+    #status { flex-basis: 100%; margin: 4px 0 0; }
+
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 60px 1fr; }
+      .row img { width: 60px; height: 60px; }
+      .row select, .row button { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Gallery <span>Manager</span></h1>
+  <p class="lead">Add or remove artworks for the website gallery. Photos are resized on your device before they are sent anywhere. Videos are sent as they are, so keep them short and compressed.</p>
+
+  <details class="card" id="connect-box">
+    <summary>Publish settings <span class="badge live" id="conn-badge" hidden></span></summary>
+    <p class="hint">
+      Connect once to publish straight to the website. Only people who have a valid access token can publish,
+      so visitors can open this page but cannot change anything. Not connected? You can still use
+      <strong>Download .zip</strong> below.
+    </p>
+    <div class="fields">
+      <label>Repository
+        <input type="text" id="repo" placeholder="username/indhuja-artistry" autocomplete="off" spellcheck="false">
+      </label>
+      <label>Branch
+        <input type="text" id="branch" value="main" autocomplete="off" spellcheck="false">
+      </label>
+      <label>Access token
+        <input type="password" id="token" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+      </label>
+      <label class="check"><input type="checkbox" id="remember"> Keep me connected on this device</label>
+    </div>
+    <div class="btns">
+      <button type="button" id="connect">Connect</button>
+      <button type="button" class="ghost" id="disconnect" hidden>Disconnect</button>
+    </div>
+    <p class="msg" id="conn-status" role="status" aria-live="polite"></p>
+  </details>
+
+  <h2>Add photos or videos</h2>
+  <div class="upload-to">
+    <label for="upload-category">1. Choose the category</label>
+    <select id="upload-category">
+      <option value="caricature">Caricature Art</option>
+      <option value="pencil">Pencil Art</option>
+      <option value="wall">Wall Art</option>
+      <option value="event">Live Events</option>
+      <option value="video">Videos</option>
+    </select>
+    <p class="hint" id="upload-hint"></p>
+  </div>
+
+  <label class="drop" id="drop">
+    <strong>2. Click to choose files, or drop them here</strong>
+    <small>Photos: JPG or PNG (resized automatically). Videos: MP4 or WebM, up to 25 MB each.</small>
+    <input id="file-input" type="file" accept="image/*,video/mp4,video/webm" multiple>
+  </label>
+  <ul class="list" id="new-list" style="margin-top:12px"></ul>
+
+  <h2>Already in the gallery</h2>
+  <ul class="list" id="existing-list"></ul>
+  <p class="empty" id="existing-empty" hidden>The gallery is empty.</p>
+
+  <div class="actions">
+    <button id="publish" type="button" hidden>Publish to website</button>
+    <button id="zip" type="button">Download .zip</button>
+    <p class="msg" id="status" role="status" aria-live="polite"></p>
+  </div>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const CATEGORIES = {
+    caricature: "Caricature Art",
+    pencil: "Pencil Art",
+    wall: "Wall Art",
+    event: "Live Events",
+    video: "Videos"
+  };
+  // Used as the title when a file name is just camera numbers (IMG_2041.jpg)
+  const DEFAULT_TITLES = {
+    caricature: "Caricature Art",
+    pencil: "Pencil Portrait",
+    wall: "Wall Painting",
+    event: "Live Event Art",
+    video: "Video"
+  };
+  const MAX_SIDE = 1400;   // longest side of the saved image, in pixels
+  const MAX_VIDEO_MB = 25; // keeps the website fast and fits GitHub limits
+  const QUALITY = 0.86;    // JPEG quality
+  const STORE_KEY = "indhuja-admin-github";
+  const GH_API = "https://api.github.com";
+
+  const clone = (list) =>
+    (Array.isArray(list) ? list : []).map((x) => ({
+      src: String(x.src || ""),
+      category: String(x.category || "caricature"),
+      title: String(x.title || ""),
+      ...(x.type === "video" ? { type: "video", poster: String(x.poster || "") } : {})
+    }));
+
+  let existing = clone(window.GALLERY);
+  let baseline = JSON.stringify(clone(existing));
+  const fresh = [];     // { kind: "image"|"video", file, title, category, url, previewUrl?, posterBytes? }
+  const removed = [];   // image paths removed from the gallery (deleted from the repo on publish)
+  let conn = null;      // { repo, branch, token }
+
+  const $ = (id) => document.getElementById(id);
+  const dropEl = $("drop"), fileInput = $("file-input");
+  const newList = $("new-list"), existingList = $("existing-list"), existingEmpty = $("existing-empty");
+  const publishBtn = $("publish"), zipBtn = $("zip"), statusEl = $("status");
+  const connectBox = $("connect-box"), connBadge = $("conn-badge"), connStatus = $("conn-status");
+  const uploadCat = $("upload-category"), uploadHint = $("upload-hint");
+  const repoInput = $("repo"), branchInput = $("branch"), tokenInput = $("token");
+  const rememberInput = $("remember"), connectBtn = $("connect"), disconnectBtn = $("disconnect");
+
+  const say = (text, type) => { statusEl.textContent = text; statusEl.className = "msg " + (type || ""); };
+  const sayConn = (text, type) => { connStatus.textContent = text; connStatus.className = "msg " + (type || ""); };
+
+  function updateUploadHint() {
+    const videosOnly = uploadCat.value === "video";
+    fileInput.accept = videosOnly ? "video/mp4,video/webm" : "image/*,video/mp4,video/webm";
+    uploadHint.textContent = videosOnly
+      ? "Videos only (MP4 or WebM, up to 25 MB each). They appear under the Videos filter."
+      : "Photos and videos both work. Videos you add here also appear under the Videos filter.";
+  }
+  uploadCat.addEventListener("change", updateUploadHint);
+  updateUploadHint();
+
+  /* ---------- list UI ---------- */
+  // "Videos" is only offered for video rows; photos use the four photo categories.
+  function categorySelect(value, onChange, isVideo) {
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", "Category");
+    for (const [key, label] of Object.entries(CATEGORIES)) {
+      if (key === "video" && !isVideo) continue;
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = label;
+      select.appendChild(opt);
+    }
+    const allowed = CATEGORIES[value] && (isVideo || value !== "video");
+    select.value = allowed ? value : (isVideo ? "video" : "caricature");
+    onChange(select.value); // keeps the saved value in step with what the dropdown shows
+    select.addEventListener("change", () => onChange(select.value));
+    return select;
+  }
+
+  function row(src, badgeText, live, item, onRemove) {
+    const li = document.createElement("li");
+    li.className = "row";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+
+    const mid = document.createElement("div");
+    const badge = document.createElement("span");
+    badge.className = "badge" + (live ? " live" : "");
+    badge.textContent = badgeText;
+    const title = document.createElement("input");
+    title.type = "text";
+    title.maxLength = 80;
+    title.value = item.title || "";
+    title.placeholder = "Title";
+    title.setAttribute("aria-label", "Title");
+    title.addEventListener("input", () => { item.title = title.value; });
+    mid.append(badge, title);
+
+    const select = categorySelect(item.category, (v) => { item.category = v; }, item.type === "video" || item.kind === "video");
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "ghost";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", onRemove);
+
+    li.append(img, mid, select, remove);
+    return li;
+  }
+
+  function releaseUrls(item) {
+    if (item.url) URL.revokeObjectURL(item.url);
+    if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+  }
+
+  // Files under assets/gallery/ that are no longer used get deleted from the website on publish.
+  function queueRemoval(item) {
+    [item.src, item.poster].forEach((path) => {
+      if (
+        path && path.startsWith("assets/gallery/") &&
+        !existing.some((x) => x.src === path || x.poster === path) &&
+        !removed.includes(path)
+      ) removed.push(path);
+    });
+  }
+
+  function render() {
+    existingList.replaceChildren(
+      ...existing.map((item, i) =>
+        row(
+          item.type === "video" ? item.poster : item.src,
+          item.type === "video" ? "Video in gallery" : "In gallery",
+          true,
+          item,
+          () => {
+            existing.splice(i, 1);
+            queueRemoval(item);
+            render();
+          }
+        )
+      )
+    );
+    existingEmpty.hidden = existing.length > 0;
+
+    newList.replaceChildren(
+      ...fresh.map((item, i) =>
+        row(
+          item.kind === "video" ? item.previewUrl : item.url,
+          item.kind === "video" ? "New video" : "New",
+          false,
+          item,
+          () => {
+            releaseUrls(item);
+            fresh.splice(i, 1);
+            render();
+          }
+        )
+      )
+    );
+  }
+
+  // Nice title from the file name; falls back to the category name for camera-style names.
+  const defaultTitle = (name, category) => {
+    const clean = name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+    const cameraName =
+      /^(img|dsc|dscn|pxl|vid|mvimg|image|photo|video|screenshot|whatsapp|signal)\b[\s\d]*/i.test(clean) &&
+      /\d/.test(clean);
+    const onlyNumbers = /^[\d\s.]+$/.test(clean);
+    if (!clean || cameraName || onlyNumbers) return DEFAULT_TITLES[category] || "Artwork";
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  };
+
+  // Grabs a frame from the video to use as its thumbnail.
+  function makeVideoPoster(url) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      const timer = setTimeout(() => reject(new Error("timeout")), 15000);
+      const fail = () => { clearTimeout(timer); reject(new Error("decode")); };
+
+      video.addEventListener("error", fail, { once: true });
+      video.addEventListener("loadeddata", () => {
+        const d = Number.isFinite(video.duration) ? video.duration : 2;
+        video.currentTime = Math.min(1, d / 2);
+      }, { once: true });
+      video.addEventListener("seeked", () => {
+        try {
+          const scale = Math.min(1, 1000 / Math.max(video.videoWidth, video.videoHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+          canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(async (blob) => {
+            clearTimeout(timer);
+            if (!blob) return reject(new Error("encode"));
+            resolve({
+              bytes: new Uint8Array(await blob.arrayBuffer()),
+              previewUrl: URL.createObjectURL(blob)
+            });
+          }, "image/jpeg", 0.84);
+        } catch (e) { fail(); }
+      }, { once: true });
+      video.src = url;
+    });
+  }
+
+  async function addFiles(files) {
+    const problems = [];
+    const chosenCategory = uploadCat.value;
+    if (files.some((f) => f.type.startsWith("video/"))) say("Reading video…");
+
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        if (chosenCategory === "video") {
+          problems.push(`"${file.name}" is a photo. Pick a photo category above (not Videos) to add photos.`);
+          continue;
+        }
+        fresh.push({
+          kind: "image",
+          file,
+          title: defaultTitle(file.name, chosenCategory),
+          category: chosenCategory,
+          url: URL.createObjectURL(file)
+        });
+      } else if (file.type === "video/mp4" || file.type === "video/webm") {
+        const mb = file.size / 1048576;
+        if (mb > MAX_VIDEO_MB) {
+          problems.push(`"${file.name}" is ${mb.toFixed(0)} MB. Videos must be under ${MAX_VIDEO_MB} MB: shorten it or export it as 720p.`);
+          continue;
+        }
+        const url = URL.createObjectURL(file);
+        try {
+          const poster = await makeVideoPoster(url);
+          fresh.push({
+            kind: "video",
+            file,
+            title: defaultTitle(file.name, chosenCategory),
+            category: chosenCategory,
+            url,
+            previewUrl: poster.previewUrl,
+            posterBytes: poster.bytes
+          });
+        } catch (e) {
+          URL.revokeObjectURL(url);
+          problems.push(`"${file.name}" could not be read. Please use an MP4 (H.264) or WebM video.`);
+        }
+      } else {
+        problems.push(`"${file.name}" is not a supported photo or video. Use JPG, PNG, MP4 or WebM.`);
+      }
+    }
+
+    say(problems.join(" "), problems.length ? "error" : "");
+    render();
+  }
+
+  fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
+  ["dragenter", "dragover"].forEach((t) =>
+    dropEl.addEventListener(t, (e) => { e.preventDefault(); dropEl.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((t) =>
+    dropEl.addEventListener(t, (e) => { e.preventDefault(); dropEl.classList.remove("over"); }));
+  dropEl.addEventListener("drop", (e) => addFiles([...e.dataTransfer.files]));
+
+  /* ---------- image resize ---------- */
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("decode"));
+      img.src = url;
+    });
+  }
+
+  async function resizeToJpeg(item) {
+    const img = await loadImage(item.url);
+    const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";                 // PNGs with transparency become white
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", QUALITY));
+    if (!blob) throw new Error("encode");
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  const slug = (text) =>
+    text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "artwork";
+
+  // Resizes every new photo and returns the files to save plus the final gallery list.
+  async function prepare(progress) {
+    const files = [];
+    const list = clone(existing).map((x) => ({ ...x, title: x.title.trim() || "Artwork" }));
+    const stamp = Date.now().toString(36);
+
+    for (let i = 0; i < fresh.length; i++) {
+      const item = fresh[i];
+      const title = (item.title || "").trim() || "Artwork";
+      const base = `${slug(title)}-${stamp}-${i + 1}`;
+      if (progress) progress(`Preparing ${item.kind === "video" ? "video" : "photo"} ${i + 1} of ${fresh.length}…`);
+
+      if (item.kind === "video") {
+        const ext = item.file.type === "video/webm" ? "webm" : "mp4";
+        const videoPath = `assets/gallery/videos/${base}.${ext}`;
+        const posterPath = `assets/gallery/${base}-poster.jpg`;
+        files.push(
+          { name: videoPath, data: new Uint8Array(await item.file.arrayBuffer()) },
+          { name: posterPath, data: item.posterBytes }
+        );
+        list.push({ src: videoPath, category: item.category, title, type: "video", poster: posterPath });
+      } else {
+        let bytes;
+        try {
+          bytes = await resizeToJpeg(item);
+        } catch (e) {
+          throw new Error(`"${item.file.name}" could not be read. Please use a JPG or PNG photo.`);
+        }
+        const path = `assets/gallery/${base}.jpg`;
+        files.push({ name: path, data: bytes });
+        list.push({ src: path, category: item.category, title });
+      }
+    }
+    return { files, list };
+  }
+
+  const galleryJs = (list) =>
+    "// Gallery list for Indhuja Artistry.\n" +
+    "// Do not edit by hand: use admin.html to add or remove artworks.\n" +
+    "// category must be one of: caricature, pencil, wall, event. Videos have type: \"video\" (category video, or any category) and a poster image.\n" +
+    "window.GALLERY = " + JSON.stringify(list, null, 2) + ";\n";
+
+  /* ---------- ZIP download (works without any account) ---------- */
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function makeZip(files) {
+    const enc = new TextEncoder();
+    const parts = [];
+    const central = [];
+    let offset = 0;
+
+    for (const f of files) {
+      const name = enc.encode(f.name);
+      const crc = crc32(f.data);
+      const size = f.data.length;
+
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true);
+      lh.setUint16(4, 20, true);
+      lh.setUint16(6, 0x0800, true);
+      lh.setUint16(8, 0, true);
+      lh.setUint16(10, 0, true);
+      lh.setUint16(12, 33, true);
+      lh.setUint32(14, crc, true);
+      lh.setUint32(18, size, true);
+      lh.setUint32(22, size, true);
+      lh.setUint16(26, name.length, true);
+      lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), name, f.data);
+
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true);
+      ch.setUint16(4, 20, true);
+      ch.setUint16(6, 20, true);
+      ch.setUint16(8, 0x0800, true);
+      ch.setUint16(14, 33, true);
+      ch.setUint32(16, crc, true);
+      ch.setUint32(20, size, true);
+      ch.setUint32(24, size, true);
+      ch.setUint16(28, name.length, true);
+      ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), name);
+
+      offset += 30 + name.length + size;
+    }
+
+    const cdSize = central.reduce((n, p) => n + p.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true);
+    end.setUint16(8, files.length, true);
+    end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true);
+    end.setUint32(16, offset, true);
+
+    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
+  }
+
+  zipBtn.addEventListener("click", async () => {
+    if (!existing.length && !fresh.length) { say("Add at least one photo first.", "error"); return; }
+
+    publishBtn.disabled = zipBtn.disabled = true;
+    say("Preparing your photos…");
+    try {
+      const { files, list } = await prepare(say);
+      files.unshift({ name: "gallery-data.js", data: new TextEncoder().encode(galleryJs(list)) });
+
+      const url = URL.createObjectURL(makeZip(files));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "gallery-update.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+      say(`Done. Extract gallery-update.zip into your website folder (replace files), then upload the site. ${fresh.length} new photo(s), ${list.length} in total.`, "ok");
+    } catch (err) {
+      say(err.message || "Something went wrong. Please try again.", "error");
+    } finally {
+      publishBtn.disabled = zipBtn.disabled = false;
+    }
+  });
+
+  /* ---------- GitHub publishing ---------- */
+  function ghError(status) {
+    if (status === 401) return "GitHub did not accept this token. Create a new token and try again.";
+    if (status === 403) return "This token is not allowed to do that. It needs Contents: Read and write on the website repository.";
+    if (status === 404) return "Repository, branch or gallery-data.js not found. Check the repository name and that the token can access it.";
+    if (status === 409 || status === 422) return "The gallery was changed by someone else just now. Reconnect and try again.";
+    return `GitHub returned an error (${status}). Please try again.`;
+  }
+
+  async function gh(path, options) {
+    const opts = options || {};
+    let res;
+    try {
+      res = await fetch(GH_API + path, {
+        method: opts.method || "GET",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "Authorization": "Bearer " + conn.token,
+          "X-GitHub-Api-Version": "2022-11-28",
+          ...(opts.body ? { "Content-Type": "application/json" } : {}),
+          ...(opts.headers || {})
+        },
+        body: opts.body ? JSON.stringify(opts.body) : undefined
+      });
+    } catch (e) {
+      throw new Error("Could not reach GitHub. Check your internet connection.");
+    }
+    if (!res.ok) throw new Error(ghError(res.status));
+    return res;
+  }
+
+  function parseGalleryJs(text) {
+    const a = text.indexOf("[");
+    const b = text.lastIndexOf("]");
+    if (a < 0 || b < a) throw new Error("gallery-data.js in the repository has an unexpected format.");
+    return JSON.parse(text.slice(a, b + 1));
+  }
+
+  async function loadRemoteGallery() {
+    const res = await gh(
+      `/repos/${conn.repo}/contents/gallery-data.js?ref=${encodeURIComponent(conn.branch)}`,
+      { headers: { Accept: "application/vnd.github.raw+json" } }
+    );
+    return parseGalleryJs(await res.text());
+  }
+
+  function toBase64(bytes) {
+    let bin = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+    }
+    return btoa(bin);
+  }
+
+  function readSaved() {
+    try {
+      return JSON.parse(localStorage.getItem(STORE_KEY) || sessionStorage.getItem(STORE_KEY) || "null");
+    } catch (e) { return null; }
+  }
+  function writeSaved(remember) {
+    try {
+      localStorage.removeItem(STORE_KEY);
+      sessionStorage.removeItem(STORE_KEY);
+      (remember ? localStorage : sessionStorage).setItem(STORE_KEY, JSON.stringify(conn));
+    } catch (e) { /* storage blocked: the token simply is not remembered */ }
+  }
+  function clearSaved() {
+    try { localStorage.removeItem(STORE_KEY); sessionStorage.removeItem(STORE_KEY); } catch (e) {}
+  }
+
+  function updateConnUI() {
+    const on = Boolean(conn);
+    publishBtn.hidden = !on;
+    disconnectBtn.hidden = !on;
+    connBadge.hidden = !on;
+    if (on) connBadge.textContent = `Connected: ${conn.repo}`;
+    connectBtn.textContent = on ? "Reconnect" : "Connect";
+  }
+
+  async function connect(remember) {
+    const repo = repoInput.value.trim()
+      .replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "").replace(/\/+$/, "");
+    const branch = branchInput.value.trim() || "main";
+    const token = tokenInput.value.trim();
+
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { sayConn("Enter the repository as username/repository-name.", "error"); return false; }
+    if (!token) { sayConn("Paste your access token.", "error"); return false; }
+
+    conn = { repo, branch, token };
+    sayConn("Connecting…");
+    connectBtn.disabled = true;
+    try {
+      const remote = await loadRemoteGallery();
+      existing = clone(remote);
+      baseline = JSON.stringify(clone(existing));
+      removed.length = 0;
+      writeSaved(remember);
+      render();
+      updateConnUI();
+      sayConn("Connected. The gallery below is the live one.", "ok");
+      connectBox.open = false;
+      return true;
+    } catch (err) {
+      conn = null;
+      updateConnUI();
+      sayConn(err.message, "error");
+      return false;
+    } finally {
+      connectBtn.disabled = false;
+    }
+  }
+
+  connectBtn.addEventListener("click", () => connect(rememberInput.checked));
+
+  disconnectBtn.addEventListener("click", () => {
+    conn = null;
+    clearSaved();
+    tokenInput.value = "";
+    existing = clone(window.GALLERY);
+    baseline = JSON.stringify(clone(existing));
+    removed.length = 0;
+    render();
+    updateConnUI();
+    sayConn("Disconnected.", "ok");
+  });
+
+  publishBtn.addEventListener("click", async () => {
+    if (!conn) return;
+
+    const unchanged =
+      fresh.length === 0 && removed.length === 0 && JSON.stringify(clone(existing)) === baseline;
+    if (unchanged) { say("Nothing to publish yet. Add, edit or remove an artwork first.", "error"); return; }
+
+    publishBtn.disabled = zipBtn.disabled = true;
+    try {
+      const { files, list } = await prepare(say);
+      const base = `/repos/${conn.repo}`;
+      const branchRef = encodeURI(conn.branch);
+
+      say("Contacting GitHub…");
+      const head = await (await gh(`${base}/git/ref/heads/${branchRef}`)).json();
+      const headSha = head.object.sha;
+      const headCommit = await (await gh(`${base}/git/commits/${headSha}`)).json();
+
+      const tree = [];
+      for (let i = 0; i < files.length; i++) {
+        say(`Uploading file ${i + 1} of ${files.length}…`);
+        const blob = await (await gh(`${base}/git/blobs`, {
+          method: "POST",
+          body: { content: toBase64(files[i].data), encoding: "base64" }
+        })).json();
+        tree.push({ path: files[i].name, mode: "100644", type: "blob", sha: blob.sha });
+      }
+      tree.push({ path: "gallery-data.js", mode: "100644", type: "blob", content: galleryJs(list) });
+      removed
+        .filter((p) => !list.some((x) => x.src === p || x.poster === p))
+        .forEach((p) => tree.push({ path: p, mode: "100644", type: "blob", sha: null }));
+
+      say("Saving…");
+      const newTree = await (await gh(`${base}/git/trees`, {
+        method: "POST",
+        body: { base_tree: headCommit.tree.sha, tree }
+      })).json();
+
+      const message = `Gallery: ${fresh.length} added, ${removed.length} file(s) removed (via admin)`;
+      const commit = await (await gh(`${base}/git/commits`, {
+        method: "POST",
+        body: { message, tree: newTree.sha, parents: [headSha] }
+      })).json();
+
+      await gh(`${base}/git/refs/heads/${branchRef}`, { method: "PATCH", body: { sha: commit.sha } });
+
+      fresh.forEach(releaseUrls);
+      fresh.length = 0;
+      removed.length = 0;
+      existing = list.map((x) => ({ ...x }));
+      baseline = JSON.stringify(clone(existing));
+      render();
+      say("Published! Your website updates automatically in about a minute.", "ok");
+    } catch (err) {
+      say(err.message || "Something went wrong. Please try again.", "error");
+    } finally {
+      publishBtn.disabled = zipBtn.disabled = false;
+    }
+  });
+
+  /* ---------- start ---------- */
+  render();
+  updateConnUI();
+
+  const saved = readSaved();
+  if (saved && saved.repo && saved.token) {
+    repoInput.value = saved.repo;
+    branchInput.value = saved.branch || "main";
+    tokenInput.value = saved.token;
+    rememberInput.checked = Boolean(localStorage.getItem(STORE_KEY));
+    connect(rememberInput.checked).then((ok) => { if (!ok) connectBox.open = true; });
+  } else {
+    connectBox.open = true;
+  }
+})();
+</script>
+</body>
+</html>
