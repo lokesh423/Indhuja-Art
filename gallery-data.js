@@ -1,6 +1,6 @@
 // Gallery list for Indhuja Artistry.
 // Do not edit by hand: use admin.html to add or remove artworks.
-// category must be one of: caricature, pencil, wall, event. Videos have type: "video" (category video, or any category) and a poster image.
+// category must be one of: caricature, pencil, wall, event. Videos have type: "video" and a poster image.
 window.GALLERY = [
   {
     "src": "assets/caricature-01.jpg",
@@ -18,8 +18,8 @@ window.GALLERY = [
     "title": "Wall Painting"
   },
   {
-    "src": "assets/gallery/lokesh-caricature-art-mv56kfbo-1.jpg",
+    "src": "assets/gallery/lokesh-caricature-mv56nupp-1.jpg",
     "category": "caricature",
-    "title": "Lokesh Caricature ART"
+    "title": "Lokesh caricature"
   }
 ];
