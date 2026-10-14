@@ -21,5 +21,10 @@ window.GALLERY = [
     "src": "assets/gallery/lokesh-caricature-mv56nupp-1.jpg",
     "category": "caricature",
     "title": "Lokesh caricature"
+  },
+  {
+    "src": "assets/gallery/logo-mv7vxc72-1.jpg",
+    "category": "caricature",
+    "title": "Logo"
   }
 ];
