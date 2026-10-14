@@ -29,7 +29,7 @@ window.GALLERY = [
   },
   {
     "src": "assets/gallery/logo-mv7wpb7r-1.jpg",
-    "category": "pencil",
+    "category": "caricature",
     "title": "Logo"
   }
 ];
