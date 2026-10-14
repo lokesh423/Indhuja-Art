@@ -1,35 +1,39 @@
-// Gallery list for Indhuja Artistry.
-// Do not edit by hand: use admin.html to add or remove artworks.
-// category must be one of: caricature, pencil, wall, event. Videos have type: "video" (category video, or any category) and a poster image.
+
 window.GALLERY = [
   {
-    "src": "assets/caricature-01.jpg",
-    "category": "caricature",
-    "title": "Caricature Art"
+    src: "assets/caricature-01.jpg",
+    category: "caricature",
+    title: "Caricature Art",
+    type: "image"
   },
   {
-    "src": "assets/pencil-art-01.jpg",
-    "category": "pencil",
-    "title": "Pencil Portrait"
+    src: "assets/pencil-art-01.jpg",
+    category: "pencil",
+    title: "Pencil Portrait",
+    type: "image"
   },
   {
-    "src": "assets/wall-art-01.jpg",
-    "category": "wall",
-    "title": "Wall Painting"
+    src: "assets/wall-art-01.jpg",
+    category: "wall",
+    title: "Wall Painting",
+    type: "image"
+  },
+
+  // Add new images above this line.
+  // Video entries can be added below.
+
+  {
+    src: "assets/videos/event-video-01.mp4",
+    category: "video",
+    title: "Live Event Art",
+    type: "video",
+    poster: "assets/caricature-01.jpg"
   },
   {
-    "src": "assets/gallery/lokesh-caricature-mv56nupp-1.jpg",
-    "category": "caricature",
-    "title": "Lokesh caricature"
-  },
-  {
-    "src": "assets/gallery/logo-mv7vxc72-1.jpg",
-    "category": "caricature",
-    "title": "Logo"
-  },
-  {
-    "src": "assets/gallery/logo-mv7wpb7r-1.jpg",
-    "category": "caricature",
-    "title": "Logo"
+    src: "assets/videos/mural-video-01.mp4",
+    category: "video",
+    title: "Wall Art Process",
+    type: "video",
+    poster: "assets/wall-art-01.jpg"
   }
 ];

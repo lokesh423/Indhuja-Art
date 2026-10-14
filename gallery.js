@@ -1,172 +1,266 @@
 (() => {
   "use strict";
 
-  // Builds the gallery from gallery-data.js (photos and videos) and adds the pop-up viewer.
-  // If there is no data (or JavaScript is off) the static images already in index.html stay.
+  const API_URL =
+    "https://script.google.com/macros/s/AKfycbzreRJZ6Ht1Rg2UR851IQt-x-SiijQjlj5jN4t92bmC_4ifI1ylOTuVENGZhFiNa8H32A/exec";
+
   const grid = document.querySelector(".gallery-grid");
+  const emptyMessage = document.querySelector("#gallery-empty");
+  const filterButtons = document.querySelectorAll(".filter");
+
   if (!grid) return;
 
-  const LABELS = {
-    caricature: "Caricature Art",
-    pencil: "Pencil Portrait",
-    wall: "Wall Painting",
-    event: "Live Event Art"
-  };
+  let allItems = [];
+  let activeFilter = "all";
+  let requestScript = null;
+  let requestTimer = null;
 
-  // Only local files (assets/...) or https links are accepted.
-  const SAFE = /^(assets\/|https?:\/\/)/i;
-  const isString = (v) => typeof v === "string";
+  function getCategory(item) {
+    const folder = (item.folder || "").toLowerCase();
+    const name = (item.name || "").toLowerCase();
+    const mime = (item.mimeType || "").toLowerCase();
 
-  const isValid = (item) =>
-    item &&
-    isString(item.src) && SAFE.test(item.src) &&
-    (item.poster === undefined || (isString(item.poster) && SAFE.test(item.poster)));
-
-  const PLAY_ICON =
-    '<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" focusable="false">' +
-    '<circle cx="32" cy="32" r="30" fill="rgba(255,255,255,.93)"/>' +
-    '<path d="M26 20l20 12-20 12z" style="fill:var(--accent)"/></svg>';
-
-  function buildFigure(item) {
-    const isVideo = item.type === "video";
-    const category = String(item.category || "caricature");
-    const title = String(item.title || LABELS[category] || "Artwork");
-
-    const figure = document.createElement("figure");
-    figure.className = "gallery-item";
-    figure.dataset.category = category;
-    figure.dataset.full = item.src;
-    figure.dataset.title = title;
-    if (isVideo) figure.dataset.type = "video";
-    figure.tabIndex = 0;
-    figure.setAttribute("role", "button");
-    figure.setAttribute("aria-label", `${isVideo ? "Play video" : "View larger"}: ${title}`);
-
-    const thumb = document.createElement("div");
-    thumb.className = "thumb";
-
-    const thumbSrc = isVideo ? item.poster : item.src;
-    if (thumbSrc) {
-      const img = document.createElement("img");
-      img.src = thumbSrc;
-      img.alt = isVideo ? "" : `${title} by Indhuja Artistry`;
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.addEventListener("error", () => {
-        if (isVideo) thumb.classList.add("no-poster"); // keep the video, show a colour tile
-        else figure.remove();                          // missing photo: drop the card quietly
-      });
-      thumb.appendChild(img);
-    } else {
-      thumb.classList.add("no-poster");
+    if (
+      item.type === "video" ||
+      mime.startsWith("video/") ||
+      /\.(mp4|webm|mov|m4v|avi)$/i.test(name)
+    ) {
+      return "video";
     }
+
+    if (/caricature|cartoon/.test(folder + " " + name)) {
+      return "caricature";
+    }
+
+    if (/pencil|sketch|portrait/.test(folder + " " + name)) {
+      return "pencil";
+    }
+
+    if (/wall|mural/.test(folder + " " + name)) {
+      return "wall";
+    }
+
+    if (/event|live|function/.test(folder + " " + name)) {
+      return "event";
+    }
+
+    return "other";
+  }
+
+  function humanizeFilename(filename) {
+    return String(filename || "Artwork")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function createElement(tag, className, text) {
+    const element = document.createElement(tag);
+
+    if (className) element.className = className;
+    if (text !== undefined) element.textContent = text;
+
+    return element;
+  }
+
+  function createCard(item) {
+    const category = getCategory(item);
+    const isVideo = category === "video";
+    const title = humanizeFilename(item.name);
+    const card = createElement("article", "gallery-card gallery-item");
+
+    card.dataset.category = category;
+    card.dataset.type = isVideo ? "video" : "image";
+
+    const media = createElement("div", "gallery-media");
 
     if (isVideo) {
-      const badge = document.createElement("span");
-      badge.className = "play-badge";
-      badge.innerHTML = PLAY_ICON; // fixed, trusted markup
-      thumb.appendChild(badge);
-    }
-
-    const caption = document.createElement("figcaption");
-    caption.textContent = title;
-
-    figure.append(thumb, caption);
-    return figure;
-  }
-
-  const data = Array.isArray(window.GALLERY) ? window.GALLERY.filter(isValid) : [];
-  if (data.length) grid.replaceChildren(...data.map(buildFigure));
-
-  /* ---------- pop-up viewer (photos and videos) ---------- */
-  const dlg = document.createElement("dialog");
-  dlg.className = "lightbox";
-  dlg.setAttribute("aria-label", "Artwork viewer");
-  dlg.innerHTML =
-    '<button class="lb-close" type="button" aria-label="Close">&times;</button>' +
-    '<button class="lb-nav lb-prev" type="button" aria-label="Previous">&#8249;</button>' +
-    '<div class="lb-stage"></div>' +
-    '<button class="lb-nav lb-next" type="button" aria-label="Next">&#8250;</button>' +
-    '<p class="lb-caption"></p>';
-  document.body.appendChild(dlg);
-
-  const stage = dlg.querySelector(".lb-stage");
-  const captionEl = dlg.querySelector(".lb-caption");
-  const prevBtn = dlg.querySelector(".lb-prev");
-  const nextBtn = dlg.querySelector(".lb-next");
-  let items = [];
-  let index = 0;
-
-  const visibleItems = () => [...grid.querySelectorAll(".gallery-item")].filter((f) => !f.hidden);
-
-  function stopMedia() {
-    const video = stage.querySelector("video");
-    if (video) {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    }
-    stage.replaceChildren();
-  }
-
-  function show(i) {
-    stopMedia();
-    index = (i + items.length) % items.length;
-    const fig = items[index];
-    const thumbImg = fig.querySelector("img");
-    const title = fig.dataset.title || (fig.querySelector("figcaption") || {}).textContent || "";
-
-    if (fig.dataset.type === "video") {
       const video = document.createElement("video");
+
       video.controls = true;
-      video.autoplay = true;
+      video.preload = "metadata";
       video.playsInline = true;
-      video.preload = "auto";
-      if (thumbImg && thumbImg.getAttribute("src")) video.poster = thumbImg.getAttribute("src");
-      video.src = fig.dataset.full;
-      stage.appendChild(video);
+      video.setAttribute("aria-label", title);
+
+      if (item.thumbnail) video.poster = item.thumbnail;
+      if (item.url) video.src = item.url;
+
+      media.appendChild(video);
     } else {
-      const img = document.createElement("img");
-      img.src = fig.dataset.full || (thumbImg && thumbImg.currentSrc) || "";
-      img.alt = title;
-      stage.appendChild(img);
+      const link = document.createElement("a");
+      const image = document.createElement("img");
+
+      link.href = item.url || item.thumbnail || "#";
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.setAttribute("aria-label", "Open " + title);
+
+      image.src = item.thumbnail || item.url || "";
+      image.alt = title;
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      image.addEventListener("error", () => {
+        image.classList.add("gallery-image-error");
+        image.alt = title + " — image unavailable";
+      });
+
+      link.appendChild(image);
+      media.appendChild(link);
     }
 
-    captionEl.textContent = title;
-    const many = items.length > 1;
-    prevBtn.hidden = nextBtn.hidden = !many;
+    const caption = createElement("p", "gallery-caption", title);
+    card.append(media, caption);
+
+    return card;
   }
 
-  function open(fig) {
-    items = visibleItems();
-    const start = items.indexOf(fig);
-    if (start < 0) return;
-    show(start);
-    if (!dlg.open) dlg.showModal();
+  function updateHeroImage() {
+    const heroImage = document.querySelector(".hero-art img");
+
+    if (!heroImage) return;
+
+    const firstImage = allItems.find((item) => {
+      return item.type !== "video" &&
+        (item.mimeType || "").startsWith("image/");
+    });
+
+    if (firstImage) {
+      heroImage.src = firstImage.thumbnail || firstImage.url;
+      heroImage.alt = humanizeFilename(firstImage.name) +
+        " by Indhuja Artistry";
+    }
   }
 
-  grid.addEventListener("click", (e) => {
-    const fig = e.target.closest(".gallery-item");
-    if (fig && !fig.hidden) open(fig);
+  function renderGallery() {
+    grid.replaceChildren();
+
+    const filtered = allItems.filter((item) => {
+      return activeFilter === "all" ||
+        getCategory(item) === activeFilter;
+    });
+
+    filtered.forEach((item) => {
+      grid.appendChild(createCard(item));
+    });
+
+    if (emptyMessage) {
+      emptyMessage.hidden = filtered.length > 0;
+    }
+
+    if (filtered.length === 0) {
+      const note = createElement(
+        "p",
+        "gallery-status",
+        allItems.length === 0
+          ? "No artwork has been added yet."
+          : "No artwork found in this category."
+      );
+
+      grid.appendChild(note);
+    }
+  }
+
+  function setActiveFilter(selectedButton) {
+    activeFilter = selectedButton.dataset.filter || "all";
+
+    filterButtons.forEach((button) => {
+      const selected = button === selectedButton;
+
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+
+    renderGallery();
+  }
+
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveFilter(button);
+    });
   });
 
-  grid.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    const fig = e.target.closest(".gallery-item");
-    if (!fig) return;
-    e.preventDefault();
-    open(fig);
-  });
+  function loadGallery() {
+    grid.replaceChildren(
+      createElement("p", "gallery-status", "Loading artwork...")
+    );
 
-  dlg.querySelector(".lb-close").addEventListener("click", () => dlg.close());
-  prevBtn.addEventListener("click", () => show(index - 1));
-  nextBtn.addEventListener("click", () => show(index + 1));
+    // A unique callback avoids cross-origin fetch/CORS restrictions.
+    const callbackName =
+      "__indhujaGalleryCallback_" + Date.now();
 
-  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }); // click outside the media
-  dlg.addEventListener("keydown", (e) => {
-    if (items.length < 2) return;
-    if (e.key === "ArrowLeft") show(index - 1);
-    if (e.key === "ArrowRight") show(index + 1);
-  });
-  dlg.addEventListener("close", stopMedia); // also fires on Esc
+    let finished = false;
+
+    function cleanup() {
+      if (requestTimer) {
+        clearTimeout(requestTimer);
+        requestTimer = null;
+      }
+
+      if (requestScript) {
+        requestScript.remove();
+        requestScript = null;
+      }
+
+      try {
+        delete window[callbackName];
+      } catch (_) {
+        window[callbackName] = undefined;
+      }
+    }
+
+    function fail(message) {
+      if (finished) return;
+      finished = true;
+      cleanup();
+
+      grid.replaceChildren(
+        createElement("p", "gallery-error", message)
+      );
+
+      console.error("Indhuja Artistry gallery failed to load.");
+    }
+
+    window[callbackName] = (data) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+
+      if (!data || data.success !== true ||
+          !Array.isArray(data.files)) {
+        grid.replaceChildren(
+          createElement(
+            "p",
+            "gallery-error",
+            "Gallery data could not be loaded. Please try again later."
+          )
+        );
+        return;
+      }
+
+      allItems = data.files;
+      updateHeroImage();
+      renderGallery();
+    };
+
+    requestScript = document.createElement("script");
+    requestScript.src =
+      API_URL +
+      "?callback=" + encodeURIComponent(callbackName) +
+      "&_=" + Date.now();
+    requestScript.async = true;
+
+    requestScript.onerror = () => {
+      fail("Gallery could not connect. Please refresh and try again.");
+    };
+
+    requestTimer = setTimeout(() => {
+      fail("Gallery is taking too long to load. Please try again.");
+    }, 15000);
+
+    document.head.appendChild(requestScript);
+  }
+
+  loadGallery();
 })();

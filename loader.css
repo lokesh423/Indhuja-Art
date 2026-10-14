@@ -1,0 +1,272 @@
+
+/* =====================================
+   INDHUJA ARTISTRY - SEPARATE LOADER CSS
+===================================== */
+
+.canvas-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #fffaf3;
+  color: #302735;
+  opacity: 1;
+  visibility: visible;
+  isolation: isolate;
+}
+
+.canvas-loader,
+.canvas-loader * {
+  box-sizing: border-box;
+}
+
+.canvas-loader__layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 0.7s cubic-bezier(.76, 0, .24, 1);
+}
+
+.canvas-loader__layer--back {
+  z-index: 0;
+  background: #80c8b8;
+}
+
+.canvas-loader__layer--middle {
+  z-index: 1;
+  background: #b6a0df;
+}
+
+.canvas-loader__layer--front {
+  z-index: 2;
+  background: #fffaf3;
+}
+
+.canvas-loader__content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: min(92%, 460px);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: loaderContentIn 0.7s ease both;
+}
+
+.canvas-loader__frame {
+  width: 100%;
+}
+
+.canvas-loader__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.canvas-loader__branding {
+  margin-top: 4px;
+}
+
+.canvas-loader__name {
+  margin: 0;
+  color: #302735;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 6vw, 43px);
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+
+.canvas-loader__name span {
+  color: #ed796f;
+  font-style: italic;
+}
+
+.canvas-loader__tagline {
+  margin: 10px 0 0;
+  color: #827783;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.canvas-loader__progress {
+  width: 150px;
+  height: 3px;
+  margin-top: 28px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #e9dfd5;
+}
+
+.canvas-loader__progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ed796f;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.canvas-loader.is-animating
+.canvas-loader__progress span {
+  animation: loaderProgress 2.7s ease forwards;
+}
+
+.canvas-loader__status {
+  margin: 12px 0 0;
+  color: #827783;
+  font-size: 12px;
+}
+
+/* SVG paint strokes */
+.canvas-loader .canvas-stroke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.canvas-loader .stroke-lavender {
+  stroke: #b6a0df;
+}
+
+.canvas-loader .stroke-yellow {
+  stroke: #f0c86a;
+}
+
+.canvas-loader .stroke-teal {
+  stroke: #80c8b8;
+}
+
+.canvas-loader .stroke-coral {
+  stroke: #ed796f;
+}
+
+.canvas-loader .canvas-brush {
+  opacity: 0;
+  pointer-events: none;
+  transform-box: view-box;
+}
+
+.canvas-loader .canvas-brush.is-visible {
+  opacity: 1;
+}
+
+.canvas-loader .paint-dot {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.canvas-loader.is-animating .paint-dot {
+  animation: loaderDotPop 0.45s ease forwards;
+}
+
+.canvas-loader .paint-star {
+  fill: #f0c86a;
+  opacity: 0;
+}
+
+.canvas-loader.is-animating .paint-star {
+  animation: loaderStarPop 0.5s 1.4s ease forwards;
+}
+
+/* Layered exit */
+.canvas-loader.is-done {
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s 1.1s;
+}
+
+.canvas-loader.is-done .canvas-loader__content {
+  opacity: 0;
+  transform: translateY(-12px) scale(.97);
+  transition: opacity .3s ease, transform .4s ease;
+}
+
+.canvas-loader.is-done .canvas-loader__layer--front {
+  transform: translateY(-105%);
+}
+
+.canvas-loader.is-done .canvas-loader__layer--middle {
+  transform: translateY(-105%);
+  transition-delay: .12s;
+}
+
+.canvas-loader.is-done .canvas-loader__layer--back {
+  transform: translateY(-105%);
+  transition-delay: .24s;
+}
+
+/* Keyframes */
+@keyframes loaderContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loaderProgress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loaderDotPop {
+  from {
+    opacity: 0;
+    transform: scale(.2);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes loaderStarPop {
+  from {
+    opacity: 0;
+    transform: scale(.2) rotate(-25deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .canvas-loader__content {
+    width: 94%;
+  }
+
+  .canvas-loader__tagline {
+    font-size: 9px;
+    letter-spacing: 1.8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-loader__content {
+    animation: none;
+  }
+
+  .canvas-loader.is-animating .canvas-loader__progress span {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

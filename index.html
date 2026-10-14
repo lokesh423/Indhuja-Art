@@ -1,846 +1,837 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Gallery Manager | Indhuja Artistry</title>
-  <script src="gallery-data.js"></script>
-  <style>
-    :root {
-      --accent: #f16d59;
-      --accent-dark: #c94e3c;
-      --bg: #fff5e7;
-      --ink: #29252e;
-      --muted: #6e6873;
-      --line: #eadfd3;
-    }
-    * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
-    body {
-      margin: 0;
-      padding: 28px 5% 60px;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: "Poppins", "Trebuchet MS", Arial, sans-serif;
-      line-height: 1.55;
-    }
-    main { max-width: 900px; margin: 0 auto; }
-    h1 { margin: 0 0 4px; font-family: Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.5rem); }
-    h1 span { color: var(--accent-dark); }
-    h2 { margin: 34px 0 12px; font-family: Georgia, serif; font-size: 1.35rem; }
-    .lead { margin: 0 0 18px; color: var(--muted); }
-    .hint { margin: 8px 0 14px; color: var(--muted); font-size: .88rem; }
+  <meta name="description" content="Explore caricature art, pencil portraits, wall murals and live event art by Indhuja Artistry.">
+  <meta name="theme-color" content="#fffaf3">
 
-    .card {
-      padding: 14px 18px;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-    }
-    .card summary { cursor: pointer; font-weight: 700; }
-    .fields { display: grid; gap: 12px; margin-bottom: 14px; }
-    .fields label { display: grid; gap: 4px; font-size: .86rem; font-weight: 700; }
-    .fields label.check { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-    .fields input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
-    .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  <title>Indhuja Artistry | Art &amp; Live Events</title>
 
-    .upload-to {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 12px;
-      padding: 14px 18px;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-    }
-    .upload-to label { font-weight: 700; }
-    .upload-to select { font-size: 1rem; font-weight: 600; }
-    .upload-to .hint { margin: 0; }
+  <!-- Loader initialization -->
+  <script>
+    (function () {
+      const html = document.documentElement;
+      html.classList.add("js");
 
-    .drop {
-      display: grid;
-      place-items: center;
-      gap: 6px;
-      padding: 34px 18px;
-      border: 2px dashed var(--accent);
-      border-radius: 20px;
-      background: #fff;
-      text-align: center;
-      cursor: pointer;
-      transition: background .2s;
-    }
-    .drop.over { background: #ffe9e4; }
-    .drop strong { font-size: 1.05rem; }
-    .drop small { color: var(--muted); }
-    .drop input { display: none; }
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
 
-    .list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-    .row {
-      display: grid;
-      grid-template-columns: 72px 1fr 150px auto;
-      align-items: center;
-      gap: 12px;
-      padding: 10px;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-    }
-    .row img {
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-      border-radius: 10px;
-      background: var(--line);
-    }
-    input[type="text"], input[type="password"], select {
-      width: 100%;
-      min-width: 0;
-      padding: 10px 12px;
-      border: 1px solid #d9d0c7;
-      border-radius: 10px;
-      font: inherit;
-      background: #fffdfa;
-    }
-    .badge {
-      display: inline-block;
-      margin-bottom: 4px;
-      padding: 1px 8px;
-      border-radius: 999px;
-      background: #ffe9e4;
-      color: var(--accent-dark);
-      font-size: .7rem;
-      font-weight: 700;
-    }
-    .badge.live { background: #e3f4ec; color: #1f8a5b; }
-    summary .badge { margin: 0 0 0 8px; }
+      if (reduceMotion) return;
 
-    button {
-      padding: 10px 16px;
-      border: 2px solid var(--accent);
-      border-radius: 999px;
-      background: var(--accent);
-      color: #fff;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
-    button.ghost { background: transparent; color: var(--ink); border-color: #d9d0c7; }
-    button.ghost:hover { background: #ffe9e4; border-color: var(--accent); }
-    button:disabled { opacity: .55; cursor: wait; }
+      html.classList.add("loading", "canvas-loading");
 
-    .empty { color: var(--muted); font-size: .9rem; margin: 0; }
-    .actions { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-    .msg { margin: 8px 0 0; font-weight: 700; font-size: .92rem; }
-    .msg.error { color: #d64545; }
-    .msg.ok { color: #1f8a5b; }
-    #status { flex-basis: 100%; margin: 4px 0 0; }
+      const MIN_MS = 2200;
+      const MAX_MS = 6000;
+      const started = Date.now();
+      let closed = false;
 
-    @media (max-width: 640px) {
-      .row { grid-template-columns: 60px 1fr; }
-      .row img { width: 60px; height: 60px; }
-      .row select, .row button { grid-column: 1 / -1; }
-    }
-  </style>
-</head>
-<body>
-<main>
-  <h1>Gallery <span>Manager</span></h1>
-  <p class="lead">Add or remove artworks for the website gallery. Photos are resized on your device before they are sent anywhere. Videos are sent as they are, so keep them short and compressed.</p>
+      function closeLoader() {
+        if (closed) return;
+        closed = true;
 
-  <details class="card" id="connect-box">
-    <summary>Publish settings <span class="badge live" id="conn-badge" hidden></span></summary>
-    <p class="hint">
-      Connect once to publish straight to the website. Only people who have a valid access token can publish,
-      so visitors can open this page but cannot change anything. Not connected? You can still use
-      <strong>Download .zip</strong> below.
-    </p>
-    <div class="fields">
-      <label>Repository
-        <input type="text" id="repo" placeholder="username/indhuja-artistry" autocomplete="off" spellcheck="false">
-      </label>
-      <label>Branch
-        <input type="text" id="branch" value="main" autocomplete="off" spellcheck="false">
-      </label>
-      <label>Access token
-        <input type="password" id="token" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
-      </label>
-      <label class="check"><input type="checkbox" id="remember"> Keep me connected on this device</label>
-    </div>
-    <div class="btns">
-      <button type="button" id="connect">Connect</button>
-      <button type="button" class="ghost" id="disconnect" hidden>Disconnect</button>
-    </div>
-    <p class="msg" id="conn-status" role="status" aria-live="polite"></p>
-  </details>
+        const loader = document.getElementById("canvasLoader");
 
-  <h2>Add photos or videos</h2>
-  <div class="upload-to">
-    <label for="upload-category">1. Choose the category</label>
-    <select id="upload-category">
-      <option value="caricature">Caricature Art</option>
-      <option value="pencil">Pencil Art</option>
-      <option value="wall">Wall Art</option>
-      <option value="event">Live Events</option>
-      <option value="video">Videos</option>
-    </select>
-    <p class="hint" id="upload-hint"></p>
-  </div>
+        html.classList.remove("loading", "canvas-loading");
 
-  <label class="drop" id="drop">
-    <strong>2. Click to choose files, or drop them here</strong>
-    <small>Photos: JPG or PNG (resized automatically). Videos: MP4 or WebM, up to 25 MB each.</small>
-    <input id="file-input" type="file" accept="image/*,video/mp4,video/webm" multiple>
-  </label>
-  <ul class="list" id="new-list" style="margin-top:12px"></ul>
+        if (!loader) return;
 
-  <h2>Already in the gallery</h2>
-  <ul class="list" id="existing-list"></ul>
-  <p class="empty" id="existing-empty" hidden>The gallery is empty.</p>
+        loader.classList.add("is-done");
 
-  <div class="actions">
-    <button id="publish" type="button" hidden>Publish to website</button>
-    <button id="zip" type="button">Download .zip</button>
-    <p class="msg" id="status" role="status" aria-live="polite"></p>
-  </div>
-</main>
-
-<script>
-(() => {
-  "use strict";
-
-  const CATEGORIES = {
-    caricature: "Caricature Art",
-    pencil: "Pencil Art",
-    wall: "Wall Art",
-    event: "Live Events",
-    video: "Videos"
-  };
-  // Used as the title when a file name is just camera numbers (IMG_2041.jpg)
-  const DEFAULT_TITLES = {
-    caricature: "Caricature Art",
-    pencil: "Pencil Portrait",
-    wall: "Wall Painting",
-    event: "Live Event Art",
-    video: "Video"
-  };
-  const MAX_SIDE = 1400;   // longest side of the saved image, in pixels
-  const MAX_VIDEO_MB = 25; // keeps the website fast and fits GitHub limits
-  const QUALITY = 0.86;    // JPEG quality
-  const STORE_KEY = "indhuja-admin-github";
-  const GH_API = "https://api.github.com";
-
-  const clone = (list) =>
-    (Array.isArray(list) ? list : []).map((x) => ({
-      src: String(x.src || ""),
-      category: String(x.category || "caricature"),
-      title: String(x.title || ""),
-      ...(x.type === "video" ? { type: "video", poster: String(x.poster || "") } : {})
-    }));
-
-  let existing = clone(window.GALLERY);
-  let baseline = JSON.stringify(clone(existing));
-  const fresh = [];     // { kind: "image"|"video", file, title, category, url, previewUrl?, posterBytes? }
-  const removed = [];   // image paths removed from the gallery (deleted from the repo on publish)
-  let conn = null;      // { repo, branch, token }
-
-  const $ = (id) => document.getElementById(id);
-  const dropEl = $("drop"), fileInput = $("file-input");
-  const newList = $("new-list"), existingList = $("existing-list"), existingEmpty = $("existing-empty");
-  const publishBtn = $("publish"), zipBtn = $("zip"), statusEl = $("status");
-  const connectBox = $("connect-box"), connBadge = $("conn-badge"), connStatus = $("conn-status");
-  const uploadCat = $("upload-category"), uploadHint = $("upload-hint");
-  const repoInput = $("repo"), branchInput = $("branch"), tokenInput = $("token");
-  const rememberInput = $("remember"), connectBtn = $("connect"), disconnectBtn = $("disconnect");
-
-  const say = (text, type) => { statusEl.textContent = text; statusEl.className = "msg " + (type || ""); };
-  const sayConn = (text, type) => { connStatus.textContent = text; connStatus.className = "msg " + (type || ""); };
-
-  function updateUploadHint() {
-    const videosOnly = uploadCat.value === "video";
-    fileInput.accept = videosOnly ? "video/mp4,video/webm" : "image/*,video/mp4,video/webm";
-    uploadHint.textContent = videosOnly
-      ? "Videos only (MP4 or WebM, up to 25 MB each). They appear under the Videos filter."
-      : "Photos and videos both work. Videos you add here also appear under the Videos filter.";
-  }
-  uploadCat.addEventListener("change", updateUploadHint);
-  updateUploadHint();
-
-  /* ---------- list UI ---------- */
-  // "Videos" is only offered for video rows; photos use the four photo categories.
-  function categorySelect(value, onChange, isVideo) {
-    const select = document.createElement("select");
-    select.setAttribute("aria-label", "Category");
-    for (const [key, label] of Object.entries(CATEGORIES)) {
-      if (key === "video" && !isVideo) continue;
-      const opt = document.createElement("option");
-      opt.value = key;
-      opt.textContent = label;
-      select.appendChild(opt);
-    }
-    const allowed = CATEGORIES[value] && (isVideo || value !== "video");
-    select.value = allowed ? value : (isVideo ? "video" : "caricature");
-    onChange(select.value); // keeps the saved value in step with what the dropdown shows
-    select.addEventListener("change", () => onChange(select.value));
-    return select;
-  }
-
-  function row(src, badgeText, live, item, onRemove) {
-    const li = document.createElement("li");
-    li.className = "row";
-
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = "";
-
-    const mid = document.createElement("div");
-    const badge = document.createElement("span");
-    badge.className = "badge" + (live ? " live" : "");
-    badge.textContent = badgeText;
-    const title = document.createElement("input");
-    title.type = "text";
-    title.maxLength = 80;
-    title.value = item.title || "";
-    title.placeholder = "Title";
-    title.setAttribute("aria-label", "Title");
-    title.addEventListener("input", () => { item.title = title.value; });
-    mid.append(badge, title);
-
-    const select = categorySelect(item.category, (v) => { item.category = v; }, item.type === "video" || item.kind === "video");
-
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "ghost";
-    remove.textContent = "Remove";
-    remove.addEventListener("click", onRemove);
-
-    li.append(img, mid, select, remove);
-    return li;
-  }
-
-  function releaseUrls(item) {
-    if (item.url) URL.revokeObjectURL(item.url);
-    if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-  }
-
-  // Files under assets/gallery/ that are no longer used get deleted from the website on publish.
-  function queueRemoval(item) {
-    [item.src, item.poster].forEach((path) => {
-      if (
-        path && path.startsWith("assets/gallery/") &&
-        !existing.some((x) => x.src === path || x.poster === path) &&
-        !removed.includes(path)
-      ) removed.push(path);
-    });
-  }
-
-  function render() {
-    existingList.replaceChildren(
-      ...existing.map((item, i) =>
-        row(
-          item.type === "video" ? item.poster : item.src,
-          item.type === "video" ? "Video in gallery" : "In gallery",
-          true,
-          item,
-          () => {
-            existing.splice(i, 1);
-            queueRemoval(item);
-            render();
-          }
-        )
-      )
-    );
-    existingEmpty.hidden = existing.length > 0;
-
-    newList.replaceChildren(
-      ...fresh.map((item, i) =>
-        row(
-          item.kind === "video" ? item.previewUrl : item.url,
-          item.kind === "video" ? "New video" : "New",
-          false,
-          item,
-          () => {
-            releaseUrls(item);
-            fresh.splice(i, 1);
-            render();
-          }
-        )
-      )
-    );
-  }
-
-  // Nice title from the file name; falls back to the category name for camera-style names.
-  const defaultTitle = (name, category) => {
-    const clean = name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
-    const cameraName =
-      /^(img|dsc|dscn|pxl|vid|mvimg|image|photo|video|screenshot|whatsapp|signal)\b[\s\d]*/i.test(clean) &&
-      /\d/.test(clean);
-    const onlyNumbers = /^[\d\s.]+$/.test(clean);
-    if (!clean || cameraName || onlyNumbers) return DEFAULT_TITLES[category] || "Artwork";
-    return clean.charAt(0).toUpperCase() + clean.slice(1);
-  };
-
-  // Grabs a frame from the video to use as its thumbnail.
-  function makeVideoPoster(url) {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement("video");
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = "auto";
-      const timer = setTimeout(() => reject(new Error("timeout")), 15000);
-      const fail = () => { clearTimeout(timer); reject(new Error("decode")); };
-
-      video.addEventListener("error", fail, { once: true });
-      video.addEventListener("loadeddata", () => {
-        const d = Number.isFinite(video.duration) ? video.duration : 2;
-        video.currentTime = Math.min(1, d / 2);
-      }, { once: true });
-      video.addEventListener("seeked", () => {
-        try {
-          const scale = Math.min(1, 1000 / Math.max(video.videoWidth, video.videoHeight));
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
-          canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
-          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(async (blob) => {
-            clearTimeout(timer);
-            if (!blob) return reject(new Error("encode"));
-            resolve({
-              bytes: new Uint8Array(await blob.arrayBuffer()),
-              previewUrl: URL.createObjectURL(blob)
-            });
-          }, "image/jpeg", 0.84);
-        } catch (e) { fail(); }
-      }, { once: true });
-      video.src = url;
-    });
-  }
-
-  async function addFiles(files) {
-    const problems = [];
-    const chosenCategory = uploadCat.value;
-    if (files.some((f) => f.type.startsWith("video/"))) say("Reading video…");
-
-    for (const file of files) {
-      if (file.type.startsWith("image/")) {
-        if (chosenCategory === "video") {
-          problems.push(`"${file.name}" is a photo. Pick a photo category above (not Videos) to add photos.`);
-          continue;
-        }
-        fresh.push({
-          kind: "image",
-          file,
-          title: defaultTitle(file.name, chosenCategory),
-          category: chosenCategory,
-          url: URL.createObjectURL(file)
-        });
-      } else if (file.type === "video/mp4" || file.type === "video/webm") {
-        const mb = file.size / 1048576;
-        if (mb > MAX_VIDEO_MB) {
-          problems.push(`"${file.name}" is ${mb.toFixed(0)} MB. Videos must be under ${MAX_VIDEO_MB} MB: shorten it or export it as 720p.`);
-          continue;
-        }
-        const url = URL.createObjectURL(file);
-        try {
-          const poster = await makeVideoPoster(url);
-          fresh.push({
-            kind: "video",
-            file,
-            title: defaultTitle(file.name, chosenCategory),
-            category: chosenCategory,
-            url,
-            previewUrl: poster.previewUrl,
-            posterBytes: poster.bytes
-          });
-        } catch (e) {
-          URL.revokeObjectURL(url);
-          problems.push(`"${file.name}" could not be read. Please use an MP4 (H.264) or WebM video.`);
-        }
-      } else {
-        problems.push(`"${file.name}" is not a supported photo or video. Use JPG, PNG, MP4 or WebM.`);
+        window.setTimeout(function () {
+          loader.remove();
+        }, 1100);
       }
-    }
 
-    say(problems.join(" "), problems.length ? "error" : "");
-    render();
-  }
-
-  fileInput.addEventListener("change", () => { addFiles([...fileInput.files]); fileInput.value = ""; });
-  ["dragenter", "dragover"].forEach((t) =>
-    dropEl.addEventListener(t, (e) => { e.preventDefault(); dropEl.classList.add("over"); }));
-  ["dragleave", "drop"].forEach((t) =>
-    dropEl.addEventListener(t, (e) => { e.preventDefault(); dropEl.classList.remove("over"); }));
-  dropEl.addEventListener("drop", (e) => addFiles([...e.dataTransfer.files]));
-
-  /* ---------- image resize ---------- */
-  function loadImage(url) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("decode"));
-      img.src = url;
-    });
-  }
-
-  async function resizeToJpeg(item) {
-    const img = await loadImage(item.url);
-    const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ffffff";                 // PNGs with transparency become white
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", QUALITY));
-    if (!blob) throw new Error("encode");
-    return new Uint8Array(await blob.arrayBuffer());
-  }
-
-  const slug = (text) =>
-    text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "artwork";
-
-  // Resizes every new photo and returns the files to save plus the final gallery list.
-  async function prepare(progress) {
-    const files = [];
-    const list = clone(existing).map((x) => ({ ...x, title: x.title.trim() || "Artwork" }));
-    const stamp = Date.now().toString(36);
-
-    for (let i = 0; i < fresh.length; i++) {
-      const item = fresh[i];
-      const title = (item.title || "").trim() || "Artwork";
-      const base = `${slug(title)}-${stamp}-${i + 1}`;
-      if (progress) progress(`Preparing ${item.kind === "video" ? "video" : "photo"} ${i + 1} of ${fresh.length}…`);
-
-      if (item.kind === "video") {
-        const ext = item.file.type === "video/webm" ? "webm" : "mp4";
-        const videoPath = `assets/gallery/videos/${base}.${ext}`;
-        const posterPath = `assets/gallery/${base}-poster.jpg`;
-        files.push(
-          { name: videoPath, data: new Uint8Array(await item.file.arrayBuffer()) },
-          { name: posterPath, data: item.posterBytes }
+      function onReady() {
+        const remaining = Math.max(
+          0,
+          MIN_MS - (Date.now() - started)
         );
-        list.push({ src: videoPath, category: item.category, title, type: "video", poster: posterPath });
+
+        window.setTimeout(closeLoader, remaining);
+      }
+
+      if (document.readyState === "complete") {
+        onReady();
       } else {
-        let bytes;
-        try {
-          bytes = await resizeToJpeg(item);
-        } catch (e) {
-          throw new Error(`"${item.file.name}" could not be read. Please use a JPG or PNG photo.`);
-        }
-        const path = `assets/gallery/${base}.jpg`;
-        files.push({ name: path, data: bytes });
-        list.push({ src: path, category: item.category, title });
+        window.addEventListener("load", onReady, { once: true });
       }
-    }
-    return { files, list };
-  }
 
-  const galleryJs = (list) =>
-    "// Gallery list for Indhuja Artistry.\n" +
-    "// Do not edit by hand: use admin.html to add or remove artworks.\n" +
-    "// category must be one of: caricature, pencil, wall, event. Videos have type: \"video\" (category video, or any category) and a poster image.\n" +
-    "window.GALLERY = " + JSON.stringify(list, null, 2) + ";\n";
+      window.setTimeout(closeLoader, MAX_MS);
+    })();
+  </script>
 
-  /* ---------- ZIP download (works without any account) ---------- */
-  const CRC_TABLE = (() => {
-    const t = new Uint32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c = n;
-      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
-      t[n] = c >>> 0;
-    }
-    return t;
-  })();
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  function crc32(bytes) {
-    let c = 0xFFFFFFFF;
-    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
-    return (c ^ 0xFFFFFFFF) >>> 0;
-  }
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;800&amp;family=Poppins:wght@400;600;800&amp;family=Playfair+Display:wght@600;800&amp;family=Lora:wght@400;600&amp;family=Caveat:wght@600;700&amp;family=Nunito:wght@400;700;900&amp;family=Space+Grotesk:wght@500;700&amp;family=DM+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
 
-  function makeZip(files) {
-    const enc = new TextEncoder();
-    const parts = [];
-    const central = [];
-    let offset = 0;
 
-    for (const f of files) {
-      const name = enc.encode(f.name);
-      const crc = crc32(f.data);
-      const size = f.data.length;
+<!-- Existing style.css link-ai remove panna vendam -->
+<link rel="stylesheet" href="style.css">
 
-      const lh = new DataView(new ArrayBuffer(30));
-      lh.setUint32(0, 0x04034b50, true);
-      lh.setUint16(4, 20, true);
-      lh.setUint16(6, 0x0800, true);
-      lh.setUint16(8, 0, true);
-      lh.setUint16(10, 0, true);
-      lh.setUint16(12, 33, true);
-      lh.setUint32(14, crc, true);
-      lh.setUint32(18, size, true);
-      lh.setUint32(22, size, true);
-      lh.setUint16(26, name.length, true);
-      lh.setUint16(28, 0, true);
-      parts.push(new Uint8Array(lh.buffer), name, f.data);
+<!-- Loader CSS separate file -->
+<link rel="stylesheet" href="loader.css">
 
-      const ch = new DataView(new ArrayBuffer(46));
-      ch.setUint32(0, 0x02014b50, true);
-      ch.setUint16(4, 20, true);
-      ch.setUint16(6, 20, true);
-      ch.setUint16(8, 0x0800, true);
-      ch.setUint16(14, 33, true);
-      ch.setUint32(16, crc, true);
-      ch.setUint32(20, size, true);
-      ch.setUint32(24, size, true);
-      ch.setUint16(28, name.length, true);
-      ch.setUint32(42, offset, true);
-      central.push(new Uint8Array(ch.buffer), name);
 
-      offset += 30 + name.length + size;
-    }
+  <!-- Existing website scripts -->
+  <script src="theme.js" defer></script>
+  <script src="gallery.js" defer></script>
+  <script src="motion.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
 
-    const cdSize = central.reduce((n, p) => n + p.length, 0);
-    const end = new DataView(new ArrayBuffer(22));
-    end.setUint32(0, 0x06054b50, true);
-    end.setUint16(8, files.length, true);
-    end.setUint16(10, files.length, true);
-    end.setUint32(12, cdSize, true);
-    end.setUint32(16, offset, true);
+<body>
 
-    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
-  }
+  <!-- ===================================
+       CREATIVE CANVAS UNFOLD LOADER
+  ==================================== -->
+  <div class="canvas-loader" id="canvasLoader"
+       role="status"
+       aria-live="polite"
+       aria-label="Loading Indhuja Artistry">
 
-  zipBtn.addEventListener("click", async () => {
-    if (!existing.length && !fresh.length) { say("Add at least one photo first.", "error"); return; }
+    <div class="canvas-loader__layer canvas-loader__layer--back"></div>
+    <div class="canvas-loader__layer canvas-loader__layer--middle"></div>
+    <div class="canvas-loader__layer canvas-loader__layer--front"></div>
 
-    publishBtn.disabled = zipBtn.disabled = true;
-    say("Preparing your photos…");
-    try {
-      const { files, list } = await prepare(say);
-      files.unshift({ name: "gallery-data.js", data: new TextEncoder().encode(galleryJs(list)) });
+    <div class="canvas-loader__content">
 
-      const url = URL.createObjectURL(makeZip(files));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "gallery-update.zip";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      <div class="canvas-loader__frame">
 
-      say(`Done. Extract gallery-update.zip into your website folder (replace files), then upload the site. ${fresh.length} new photo(s), ${list.length} in total.`, "ok");
-    } catch (err) {
-      say(err.message || "Something went wrong. Please try again.", "error");
-    } finally {
-      publishBtn.disabled = zipBtn.disabled = false;
-    }
-  });
+        <svg class="canvas-loader__art"
+             viewBox="0 0 360 250"
+             xmlns="http://www.w3.org/2000/svg"
+             aria-hidden="true">
 
-  /* ---------- GitHub publishing ---------- */
-  function ghError(status) {
-    if (status === 401) return "GitHub did not accept this token. Create a new token and try again.";
-    if (status === 403) return "This token is not allowed to do that. It needs Contents: Read and write on the website repository.";
-    if (status === 404) return "Repository, branch or gallery-data.js not found. Check the repository name and that the token can access it.";
-    if (status === 409 || status === 422) return "The gallery was changed by someone else just now. Reconnect and try again.";
-    return `GitHub returned an error (${status}). Please try again.`;
-  }
+          <defs>
+            <linearGradient id="canvasPaper"
+                            x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fffefa"/>
+              <stop offset="100%" stop-color="#f4e8d9"/>
+            </linearGradient>
 
-  async function gh(path, options) {
-    const opts = options || {};
-    let res;
-    try {
-      res = await fetch(GH_API + path, {
-        method: opts.method || "GET",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/vnd.github+json",
-          "Authorization": "Bearer " + conn.token,
-          "X-GitHub-Api-Version": "2022-11-28",
-          ...(opts.body ? { "Content-Type": "application/json" } : {}),
-          ...(opts.headers || {})
-        },
-        body: opts.body ? JSON.stringify(opts.body) : undefined
-      });
-    } catch (e) {
-      throw new Error("Could not reach GitHub. Check your internet connection.");
-    }
-    if (!res.ok) throw new Error(ghError(res.status));
-    return res;
-  }
+            <filter id="canvasShadow"
+                    x="-20%" y="-20%"
+                    width="140%" height="150%">
+              <feDropShadow dx="0" dy="8"
+                            stdDeviation="8"
+                            flood-color="#7c6251"
+                            flood-opacity=".16"/>
+            </filter>
+          </defs>
 
-  function parseGalleryJs(text) {
-    const a = text.indexOf("[");
-    const b = text.lastIndexOf("]");
-    if (a < 0 || b < a) throw new Error("gallery-data.js in the repository has an unexpected format.");
-    return JSON.parse(text.slice(a, b + 1));
-  }
+          <!-- Canvas paper -->
+          <rect class="canvas-paper"
+                x="35" y="20"
+                width="290" height="200"
+                rx="5"
+                fill="url(#canvasPaper)"
+                stroke="#e9dac9"
+                stroke-width="1.5"
+                filter="url(#canvasShadow)"/>
 
-  async function loadRemoteGallery() {
-    const res = await gh(
-      `/repos/${conn.repo}/contents/gallery-data.js?ref=${encodeURIComponent(conn.branch)}`,
-      { headers: { Accept: "application/vnd.github.raw+json" } }
-    );
-    return parseGalleryJs(await res.text());
-  }
+          <!-- Artwork paint strokes -->
+          <g fill="none"
+             stroke-linecap="round"
+             stroke-linejoin="round">
 
-  function toBase64(bytes) {
-    let bin = "";
-    const CHUNK = 0x8000;
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-    }
-    return btoa(bin);
-  }
+            <path class="canvas-stroke stroke-lavender"
+                  pathLength="1"
+                  d="M62 147 C95 75 130 77 163 122"
+                  stroke="#a18bd5"
+                  stroke-width="17"
+                  stroke-dasharray="1"
+                  stroke-dashoffset="1"/>
 
-  function readSaved() {
-    try {
-      return JSON.parse(localStorage.getItem(STORE_KEY) || sessionStorage.getItem(STORE_KEY) || "null");
-    } catch (e) { return null; }
-  }
-  function writeSaved(remember) {
-    try {
-      localStorage.removeItem(STORE_KEY);
-      sessionStorage.removeItem(STORE_KEY);
-      (remember ? localStorage : sessionStorage).setItem(STORE_KEY, JSON.stringify(conn));
-    } catch (e) { /* storage blocked: the token simply is not remembered */ }
-  }
-  function clearSaved() {
-    try { localStorage.removeItem(STORE_KEY); sessionStorage.removeItem(STORE_KEY); } catch (e) {}
-  }
+            <path class="canvas-stroke stroke-yellow"
+                  pathLength="1"
+                  d="M112 177 C155 124 190 127 222 79"
+                  stroke="#f5c84c"
+                  stroke-width="14"
+                  stroke-dasharray="1"
+                  stroke-dashoffset="1"/>
 
-  function updateConnUI() {
-    const on = Boolean(conn);
-    publishBtn.hidden = !on;
-    disconnectBtn.hidden = !on;
-    connBadge.hidden = !on;
-    if (on) connBadge.textContent = `Connected: ${conn.repo}`;
-    connectBtn.textContent = on ? "Reconnect" : "Connect";
-  }
+            <path class="canvas-stroke stroke-teal"
+                  pathLength="1"
+                  d="M183 158 C217 126 247 132 292 91"
+                  stroke="#51afa3"
+                  stroke-width="13"
+                  stroke-dasharray="1"
+                  stroke-dashoffset="1"/>
 
-  async function connect(remember) {
-    const repo = repoInput.value.trim()
-      .replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "").replace(/\/+$/, "");
-    const branch = branchInput.value.trim() || "main";
-    const token = tokenInput.value.trim();
+            <!-- Coral stroke followed by brush -->
+            <path
+  id="brushPath"
+  class="canvas-stroke stroke-coral"
+  pathLength="1"
+  d="M 60 180 C 120 120, 220 240, 340 150"
+/>
 
-    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { sayConn("Enter the repository as username/repository-name.", "error"); return false; }
-    if (!token) { sayConn("Paste your access token.", "error"); return false; }
+          <!-- Paint drops -->
+          <g class="canvas-drops">
+            <circle cx="83" cy="58" r="6" fill="#f5c84c"/>
+            <circle cx="273" cy="151" r="7" fill="#a18bd5"/>
+            <circle cx="112" cy="190" r="5" fill="#51afa3"/>
+            <circle cx="242" cy="51" r="5" fill="#f16d59"/>
 
-    conn = { repo, branch, token };
-    sayConn("Connecting…");
-    connectBtn.disabled = true;
-    try {
-      const remote = await loadRemoteGallery();
-      existing = clone(remote);
-      baseline = JSON.stringify(clone(existing));
-      removed.length = 0;
-      writeSaved(remember);
-      render();
-      updateConnUI();
-      sayConn("Connected. The gallery below is the live one.", "ok");
-      connectBox.open = false;
-      return true;
-    } catch (err) {
-      conn = null;
-      updateConnUI();
-      sayConn(err.message, "error");
-      return false;
-    } finally {
-      connectBtn.disabled = false;
-    }
-  }
+            <path d="M299 177
+                     C289 165 298 157 303 151
+                     C309 163 316 170 299 177Z"
+                  fill="#f16d59"/>
+          </g>
 
-  connectBtn.addEventListener("click", () => connect(rememberInput.checked));
+          <!-- Decorative stars -->
+          <g class="canvas-stars" fill="#c59b3d">
+            <path d="M0 -8 L2 -2 L8 0 L2 2
+                     L0 8 L-2 2 L-8 0 L-2 -2Z"
+                  transform="translate(64 171)"/>
 
-  disconnectBtn.addEventListener("click", () => {
-    conn = null;
-    clearSaved();
-    tokenInput.value = "";
-    existing = clone(window.GALLERY);
-    baseline = JSON.stringify(clone(existing));
-    removed.length = 0;
-    render();
-    updateConnUI();
-    sayConn("Disconnected.", "ok");
-  });
+            <path d="M0 -6 L1.5 -1.5 L6 0
+                     L1.5 1.5 L0 6 L-1.5 1.5
+                     L-6 0 L-1.5 -1.5Z"
+                  transform="translate(287 112)"/>
+          </g>
 
-  publishBtn.addEventListener("click", async () => {
-    if (!conn) return;
+          <!-- Moving brush -->
+          <g class="canvas-brush">
 
-    const unchanged =
-      fresh.length === 0 && removed.length === 0 && JSON.stringify(clone(existing)) === baseline;
-    if (unchanged) { say("Nothing to publish yet. Add, edit or remove an artwork first.", "error"); return; }
+            <!-- Brush tip begins at the motion path origin -->
+  <g transform="rotate(-12)">
 
-    publishBtn.disabled = zipBtn.disabled = true;
-    try {
-      const { files, list } = await prepare(say);
-      const base = `/repos/${conn.repo}`;
-      const branchRef = encodeURI(conn.branch);
+              <!-- Wooden handle -->
+              <path d="M-5 -80
+                       Q-6 -85 0 -86
+                       Q6 -85 5 -80
+                       L4 -20 L-4 -20Z"
+                    fill="#b87a51"/>
 
-      say("Contacting GitHub…");
-      const head = await (await gh(`${base}/git/ref/heads/${branchRef}`)).json();
-      const headSha = head.object.sha;
-      const headCommit = await (await gh(`${base}/git/commits/${headSha}`)).json();
+              <path d="M0 -76 L0 -24"
+                    stroke="#e8bd91"
+                    stroke-width="2.5"
+                    stroke-linecap="round"/>
 
-      const tree = [];
-      for (let i = 0; i < files.length; i++) {
-        say(`Uploading file ${i + 1} of ${files.length}…`);
-        const blob = await (await gh(`${base}/git/blobs`, {
-          method: "POST",
-          body: { content: toBase64(files[i].data), encoding: "base64" }
-        })).json();
-        tree.push({ path: files[i].name, mode: "100644", type: "blob", sha: blob.sha });
-      }
-      tree.push({ path: "gallery-data.js", mode: "100644", type: "blob", content: galleryJs(list) });
-      removed
-        .filter((p) => !list.some((x) => x.src === p || x.poster === p))
-        .forEach((p) => tree.push({ path: p, mode: "100644", type: "blob", sha: null }));
+              <!-- Metal ferrule -->
+              <path d="M-5 -20 L5 -20 L7 -7
+                       Q0 -3 -7 -7Z"
+                    fill="#d8dbe0"
+                    stroke="#9fa2ac"
+                    stroke-width="1"/>
 
-      say("Saving…");
-      const newTree = await (await gh(`${base}/git/trees`, {
-        method: "POST",
-        body: { base_tree: headCommit.tree.sha, tree }
-      })).json();
+              <!-- Bristles -->
+              <path d="M-7 -7 Q0 -3 7 -7
+                       L8 -1 Q0 4 -8 -1Z"
+                    fill="#f16d59"/>
 
-      const message = `Gallery: ${fresh.length} added, ${removed.length} file(s) removed (via admin)`;
-      const commit = await (await gh(`${base}/git/commits`, {
-        method: "POST",
-        body: { message, tree: newTree.sha, parents: [headSha] }
-      })).json();
+              <path d="M-5 -4 Q0 -1 5 -4"
+                    stroke="#ffb09e"
+                    stroke-width="1.5"
+                    fill="none"
+                    stroke-linecap="round"/>
+            </g>
 
-      await gh(`${base}/git/refs/heads/${branchRef}`, { method: "PATCH", body: { sha: commit.sha } });
+<animateMotion
+    dur="1.25s"
+    begin="1.05s"
+    fill="freeze"
+    rotate="auto"
+    calcMode="paced">
+    <mpath href="#brushPath" />
+  </animateMotion>
 
-      fresh.forEach(releaseUrls);
-      fresh.length = 0;
-      removed.length = 0;
-      existing = list.map((x) => ({ ...x }));
-      baseline = JSON.stringify(clone(existing));
-      render();
-      say("Published! Your website updates automatically in about a minute.", "ok");
-    } catch (err) {
-      say(err.message || "Something went wrong. Please try again.", "error");
-    } finally {
-      publishBtn.disabled = zipBtn.disabled = false;
-    }
-  });
+          </g>
 
-  /* ---------- start ---------- */
-  render();
-  updateConnUI();
+        </svg>
+      </div>
 
-  const saved = readSaved();
-  if (saved && saved.repo && saved.token) {
-    repoInput.value = saved.repo;
-    branchInput.value = saved.branch || "main";
-    tokenInput.value = saved.token;
-    rememberInput.checked = Boolean(localStorage.getItem(STORE_KEY));
-    connect(rememberInput.checked).then((ok) => { if (!ok) connectBox.open = true; });
-  } else {
-    connectBox.open = true;
-  }
-})();
-</script>
+      <!-- Brand -->
+      <div class="canvas-loader__branding">
+        <p class="canvas-loader__name">
+          Indhuja <span>Artistry.</span>
+        </p>
+
+        <p class="canvas-loader__tagline">
+          Every colour tells a story
+        </p>
+      </div>
+
+      <!-- Progress indicator -->
+      <div class="canvas-loader__progress"
+           aria-hidden="true">
+        <span></span>
+      </div>
+
+      <p class="canvas-loader__status">
+        Creating something beautiful<span class="canvas-loader__ellipsis">...</span>
+      </p>
+
+    </div>
+  </div>
+  <!-- END CANVAS LOADER -->
+
+
+  <!-- Background decoration -->
+  <div class="art-bg" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+  </div>
+
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+
+  <!-- ===================================
+       HEADER
+  ==================================== -->
+  <header class="site-header">
+
+    <a class="brand" href="#home">
+      Indhuja <span>Artistry.</span>
+    </a>
+
+    <nav aria-label="Main navigation">
+      <a href="#services">Services</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#booking">Bookings</a>
+    </nav>
+
+    <a class="button button-small" href="#booking">
+      Let's Create
+    </a>
+
+  </header>
+
+
+  <main>
+
+    <!-- ===================================
+         HERO
+    ==================================== -->
+    <section class="hero section" id="home">
+
+      <div class="hero-copy">
+
+        <p class="eyebrow">
+          ART • CREATIVITY • EXPERIENCES
+        </p>
+
+        <h1>
+          Every idea deserves a <span>little art.</span>
+        </h1>
+
+        <p class="intro">
+          From personalised portraits to colourful wall murals
+          and live event art, let's create something memorable.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button" href="#gallery">
+            Explore My Art
+          </a>
+
+          <a class="button button-outline" href="#booking">
+            Enquire Now ↗
+          </a>
+        </div>
+
+        <p class="small-note">
+          Custom artwork · Live events · Personalised creations
+        </p>
+
+      </div>
+
+
+      <div class="hero-art">
+
+        <div class="art-shape shape-yellow"></div>
+        <div class="art-shape shape-purple"></div>
+
+        <img
+          src="assets/caricature-01.jpg"
+          alt="Artwork by Indhuja Artistry"
+          fetchpriority="high">
+
+        <span class="art-sticker">
+          Made with<br>imagination ✳
+        </span>
+
+        <svg class="art-deco deco-squiggle"
+             viewBox="0 0 120 40"
+             aria-hidden="true">
+          <path pathLength="1"
+                d="M4 20c10-18 20 18 30 0s20 18 30 0 20 18 30 0 20 18 22 0"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="4"
+                stroke-linecap="round"/>
+        </svg>
+
+        <svg class="art-deco deco-star star-1"
+             viewBox="0 0 24 24"
+             aria-hidden="true">
+          <path fill="currentColor"
+                d="M12 0c1 7 5 11 12 12-7 1-11 5-12 12-1-7-5-11-12-12 7-1 11-5 12-12z"/>
+        </svg>
+
+        <svg class="art-deco deco-star star-2"
+             viewBox="0 0 24 24"
+             aria-hidden="true">
+          <path fill="currentColor"
+                d="M12 0c1 7 5 11 12 12-7 1-11 5-12 12-1-7-5-11-12-12 7-1 11-5 12-12z"/>
+        </svg>
+
+        <svg class="art-deco deco-pencil"
+             viewBox="0 0 64 64"
+             aria-hidden="true">
+          <g fill="none"
+             stroke="currentColor"
+             stroke-width="3"
+             stroke-linejoin="round"
+             stroke-linecap="round">
+            <path d="M10 54l4-14L42 12a5 5 0 0 1 8 0l2 2a5 5 0 0 1 0 8L24 50z"/>
+            <path d="M14 40l10 10M36 18l10 10"/>
+          </g>
+        </svg>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================
+         SERVICES MARQUEE
+    ==================================== -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+
+        <div class="marquee-group">
+          <span>Caricature Art</span><i>✳</i>
+          <span>Pencil Portraits</span><i>✳</i>
+          <span>Wall Painting</span><i>✳</i>
+          <span>Live Event Art</span><i>✳</i>
+        </div>
+
+        <div class="marquee-group">
+          <span>Caricature Art</span><i>✳</i>
+          <span>Pencil Portraits</span><i>✳</i>
+          <span>Wall Painting</span><i>✳</i>
+          <span>Live Event Art</span><i>✳</i>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ===================================
+         SERVICES
+    ==================================== -->
+    <section class="section" id="services">
+
+      <div class="section-heading">
+        <p class="eyebrow">WHAT I CREATE</p>
+        <h2>A little something for every imagination.</h2>
+      </div>
+
+      <div class="service-grid">
+
+        <article class="service-card coral">
+          <span class="service-number">01</span>
+          <h3>Caricature Art</h3>
+          <p>Personalised illustrations, gifts and live caricature experiences.</p>
+          <a href="#booking" data-service="Caricature Art">
+            Enquire about this ↗
+          </a>
+        </article>
+
+        <article class="service-card yellow">
+          <span class="service-number">02</span>
+          <h3>Pencil Portraits</h3>
+          <p>Thoughtful, hand-drawn portraits made for special people and moments.</p>
+          <a href="#booking" data-service="Pencil Portraits">
+            Enquire about this ↗
+          </a>
+        </article>
+
+        <article class="service-card teal">
+          <span class="service-number">03</span>
+          <h3>Wall Painting</h3>
+          <p>Custom murals and creative artwork for selected spaces.</p>
+          <a href="#booking" data-service="Wall Painting">
+            Enquire about this ↗
+          </a>
+        </article>
+
+        <article class="service-card purple">
+          <span class="service-number">04</span>
+          <h3>Live Event Art</h3>
+          <p>Creative art experiences for celebrations and corporate events.</p>
+          <a href="#booking" data-service="Live Event Art">
+            Enquire about this ↗
+          </a>
+        </article>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================
+         DYNAMIC GALLERY
+    ==================================== -->
+    <section class="section gallery-section" id="gallery">
+
+      <div class="section-heading">
+        <p class="eyebrow">A FEW CREATIONS</p>
+        <h2>Art speaks in its own colours.</h2>
+        <p>Explore selected creations from the studio.</p>
+      </div>
+
+      <div class="filter-bar" aria-label="Filter artwork">
+
+        <button class="filter active"
+                type="button"
+                data-filter="all"
+                aria-pressed="true">
+          All Art
+        </button>
+
+        <button class="filter"
+                type="button"
+                data-filter="caricature"
+                aria-pressed="false">
+          Caricature
+        </button>
+
+        <button class="filter"
+                type="button"
+                data-filter="pencil"
+                aria-pressed="false">
+          Pencil Art
+        </button>
+
+        <button class="filter"
+                type="button"
+                data-filter="wall"
+                aria-pressed="false">
+          Wall Art
+        </button>
+
+        <button class="filter"
+                type="button"
+                data-filter="event"
+                aria-pressed="false">
+          Live Events
+        </button>
+
+        <button class="filter"
+                type="button"
+                data-filter="video"
+                aria-pressed="false">
+          Videos
+        </button>
+
+      </div>
+
+      <!-- gallery.js builds the artwork cards -->
+      <div class="gallery-grid"></div>
+
+      <p class="gallery-empty" id="gallery-empty" hidden>
+        New artworks in this category are coming soon.
+      </p>
+
+    </section>
+
+
+    <!-- ===================================
+         ENQUIRY / BOOKING REQUEST
+    ==================================== -->
+    <section class="booking-section section" id="booking">
+
+      <div class="booking-copy">
+
+        <p class="eyebrow">LET'S MAKE IT HAPPEN</p>
+
+        <h2>Have an idea? Let's bring it to life.</h2>
+
+        <p>
+          Tell me about your artwork or event. Share your preferred
+          date and details to start a conversation.
+        </p>
+
+        <p class="small-note">
+          Your date is a request only. It is not confirmed until
+          availability and details are agreed directly.
+        </p>
+
+      </div>
+
+
+      <form id="enquiry-form" class="enquiry-form">
+
+        <label for="customer-name">Your name *</label>
+        <input id="customer-name"
+               name="name"
+               required
+               autocomplete="name"
+               maxlength="100">
+
+        <label for="customer-phone">Phone number *</label>
+        <input id="customer-phone"
+               name="phone"
+               type="tel"
+               required
+               autocomplete="tel"
+               maxlength="25">
+
+        <label for="enquiry-type">What are you looking for? *</label>
+        <select id="enquiry-type" name="type" required>
+          <option value="">Choose a service</option>
+          <option>Caricature Art</option>
+          <option>Pencil Portraits</option>
+          <option>Wall Painting</option>
+          <option>Live Event Art</option>
+          <option>Other Custom Art</option>
+        </select>
+
+        <label for="preferred-date">Preferred date</label>
+        <input id="preferred-date"
+               name="date"
+               type="date">
+        <p class="field-hint">Today or a future date only.</p>
+
+        <label for="event-location">City / venue *</label>
+        <input id="event-location"
+               name="location"
+               required
+               maxlength="150"
+               autocomplete="address-level2"
+               placeholder="City or event venue">
+
+        <label for="event-state">State / Union Territory *</label>
+        <select id="event-state"
+                name="state"
+                required
+                autocomplete="address-level1">
+
+          <option value="">Choose a state</option>
+          <option>Andhra Pradesh</option>
+          <option>Arunachal Pradesh</option>
+          <option>Assam</option>
+          <option>Bihar</option>
+          <option>Chhattisgarh</option>
+          <option>Goa</option>
+          <option>Gujarat</option>
+          <option>Haryana</option>
+          <option>Himachal Pradesh</option>
+          <option>Jharkhand</option>
+          <option>Karnataka</option>
+          <option>Kerala</option>
+          <option>Madhya Pradesh</option>
+          <option>Maharashtra</option>
+          <option>Manipur</option>
+          <option>Meghalaya</option>
+          <option>Mizoram</option>
+          <option>Nagaland</option>
+          <option>Odisha</option>
+          <option>Punjab</option>
+          <option>Rajasthan</option>
+          <option>Sikkim</option>
+          <option>Tamil Nadu</option>
+          <option>Telangana</option>
+          <option>Tripura</option>
+          <option>Uttar Pradesh</option>
+          <option>Uttarakhand</option>
+          <option>West Bengal</option>
+          <option>Andaman and Nicobar Islands</option>
+          <option>Chandigarh</option>
+          <option>Dadra and Nagar Haveli and Daman and Diu</option>
+          <option>Delhi</option>
+          <option>Jammu and Kashmir</option>
+          <option>Ladakh</option>
+          <option>Lakshadweep</option>
+          <option>Puducherry</option>
+
+        </select>
+
+        <p class="field-hint">Available anywhere in India.</p>
+
+        <label for="details">Tell us more *</label>
+        <textarea id="details"
+                  name="details"
+                  required
+                  rows="4"
+                  maxlength="1500"
+                  placeholder="Event type, guest count, size, budget or ideas..."></textarea>
+
+
+        <!-- Booking conditions -->
+        <div class="conditions" role="note">
+
+          <p class="conditions-title">Booking conditions</p>
+
+          <ul>
+            <li>Your date is a request only and is confirmed after we agree on availability and details.</li>
+            <li>Past dates cannot be booked.</li>
+            <li>Available anywhere in India.</li>
+            <li><strong>Transport and accommodation must be arranged by the client.</strong></li>
+          </ul>
+
+          <label class="agree" for="agree-terms">
+            <input id="agree-terms"
+                   name="agree"
+                   type="checkbox"
+                   required>
+            <span>
+              I understand that transport and accommodation are arranged by me.
+            </span>
+          </label>
+
+        </div>
+
+
+        <!-- WhatsApp enquiry button -->
+        <button class="button submit-button" type="submit">
+
+          <svg class="wa-icon"
+               viewBox="0 0 24 24"
+               aria-hidden="true"
+               focusable="false">
+
+            <path fill="currentColor"
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+
+          </svg>
+
+          <span>Send enquiry on WhatsApp</span>
+
+        </button>
+
+        <p id="form-message"
+           class="form-message"
+           role="status"
+           aria-live="polite"></p>
+
+        <p class="privacy-note">
+          Your details will be included in the enquiry message you choose to send.
+        </p>
+
+      </form>
+    </section>
+
+  </main>
+
+
+  <!-- ===================================
+       FOOTER
+  ==================================== -->
+  <footer class="site-footer">
+
+    <a class="brand" href="#home">
+      Indhuja <span>Artistry.</span>
+    </a>
+
+    <p>
+      Made with creativity and care ❤️
+      <a href="https://www.instagram.com/lokesh__venkat/"
+         target="_blank"
+         rel="noopener noreferrer">S V LOKESH</a>
+    </p>
+
+    <p>
+      © <span id="year"></span> Indhuja Artistry
+    </p>
+
+  </footer>
+
+
+  <!-- ===================================
+       THEME SWITCHER
+  ==================================== -->
+  <div class="theme-switcher" id="theme-switcher">
+
+    <button class="theme-toggle"
+            id="theme-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="theme-panel"
+            aria-label="Customise theme">
+      🎨
+    </button>
+
+    <div class="theme-panel" id="theme-panel" hidden>
+
+      <p class="theme-title">Pick your vibe</p>
+
+      <div class="theme-presets" id="theme-presets"></div>
+
+      <label class="theme-custom" for="theme-color">
+        <span>Custom colour</span>
+        <input type="color"
+               id="theme-color"
+               value="#f16d59">
+      </label>
+
+      <button class="theme-reset" id="theme-reset" type="button">
+        Reset
+      </button>
+
+    </div>
+  </div>
+
 </body>
+<script>
+  
+document.addEventListener("DOMContentLoaded", () => {
+  const path = document.getElementById("brushPath");
+  const brush = document.getElementById("canvasBrush");
+
+  if (!path || !brush || typeof path.getPointAtLength !== "function") {
+    console.warn("Brush animation: #brushPath or #canvasBrush not found.");
+    return;
+  }
+
+  const length = path.getTotalLength();
+
+  if (!length) return;
+
+  const duration = 1800;
+  const startTime = performance.now();
+
+  brush.classList.add("is-moving");
+
+  function animateBrush(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const distance = progress * length;
+
+    const point = path.getPointAtLength(distance);
+    const nextPoint = path.getPointAtLength(
+      Math.min(distance + 1, length)
+    );
+
+    const angle = Math.atan2(
+      nextPoint.y - point.y,
+      nextPoint.x - point.x
+    ) * (180 / Math.PI);
+
+    brush.setAttribute(
+      "transform",
+      `translate(${point.x} ${point.y}) rotate(${angle})`
+    );
+
+    if (progress < 1) {
+      requestAnimationFrame(animateBrush);
+    }
+  }
+
+  requestAnimationFrame(animateBrush);
+
+  document.querySelectorAll(".canvas-stroke").forEach((stroke, index) => {
+    stroke.style.animationDelay = `${index * 0.25}s`;
+    stroke.classList.add("is-drawing");
+  });
+});
+
+</script>
 </html>
