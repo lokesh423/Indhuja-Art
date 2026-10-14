@@ -1,6 +1,6 @@
 // Gallery list for Indhuja Artistry.
 // Do not edit by hand: use admin.html to add or remove artworks.
-// category must be one of: caricature, pencil, wall, event. Videos have type: "video" and a poster image.
+// category must be one of: caricature, pencil, wall, event. Videos have type: "video" (category video, or any category) and a poster image.
 window.GALLERY = [
   {
     "src": "assets/caricature-01.jpg",
@@ -24,6 +24,11 @@ window.GALLERY = [
   },
   {
     "src": "assets/gallery/logo-mv7vxc72-1.jpg",
+    "category": "caricature",
+    "title": "Logo"
+  },
+  {
+    "src": "assets/gallery/logo-mv7wpb7r-1.jpg",
     "category": "caricature",
     "title": "Logo"
   }
