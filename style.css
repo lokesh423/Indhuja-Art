@@ -1,4 +1,3 @@
-
 :root {
   /* Colour tokens */
   --accent: #f16d59;
@@ -220,12 +219,11 @@ html[data-mode="dark"] body::before {
   backdrop-filter: blur(14px);
 }
 
-.brand {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -.7px;
-  white-space: nowrap;
-}
+.brand { display: inline-flex; align-items: center; gap: .6rem; }
+.brand-logo { width: 44px; height: 44px; flex: none; display: block; }
+.footer-logo { display: inline-block; }
+.footer-logo img { width: clamp(150px, 20vw, 200px); height: auto; display: block; }
+@media (max-width: 600px) { .brand-logo { width: 38px; height: 38px; } }
 
 .brand span {
   color: var(--accent-text);
@@ -1527,19 +1525,12 @@ html.canvas-loading body {
   SVG animateMotion controls the brush position.
   Do not apply a separate CSS movement or rotation animation.
 */
-.canvas-loader {
-  pointer-events: none;
-  transform: none;
-  transform-box: view-box;
-  transform-origin: 0 0;
-}
 .canvas-brush {
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* Brush movement-ai CSS-la override panna vendam */
 /* Decorative drops */
 .canvas-loader .canvas-drops {
   transform-box: fill-box;
@@ -1983,7 +1974,7 @@ html.canvas-loading body {
     scroll-behavior: auto !important;
   }
 
-  .canvas-loader ,
+  .canvas-loader,
   .canvas-paper,
   .canvas-loader__name,
   .canvas-loader__tagline,
@@ -1994,51 +1985,6 @@ html.canvas-loading body {
     animation: none !important;
     transition: none !important;
   }
-  
-/* Brush animation */
-.canvas-brush {
-  pointer-events: none;
-  opacity: 0;
-  transform-box: view-box;
-  will-change: transform, opacity;
-}
-
-.canvas-brush.is-moving {
-  opacity: 1;
-}
-
-.canvas-brush #canvasBrushArtwork {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-/* Draw the paint strokes */
-.canvas-stroke {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-
-.canvas-stroke.is-drawing {
-  animation: brushPaintDraw 1.8s ease forwards;
-}
-
-@keyframes brushPaintDraw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .canvas-brush {
-    display: none;
-  }
-
-  .canvas-stroke {
-    stroke-dashoffset: 0;
-    animation: none;
-  }
-}
-
 
   .canvas-loader .canvas-stroke {
     stroke-dashoffset: 0;
@@ -2076,4 +2022,16 @@ html.canvas-loading body {
   .marquee-track {
     animation: none;
   }
+}
+
+/* =========================================================
+   FONT LOCK
+   Theme changes colours only. Fonts stay the same in every theme.
+   >>> Replace the two font names below with the fonts used in your
+   >>> purple theme (default shown is Fraunces + Poppins).
+========================================================= */
+
+body {
+  --font-head: "Caveat", cursive;
+  --font-body: "Poppins", "Trebuchet MS", Arial, sans-serif;
 }
